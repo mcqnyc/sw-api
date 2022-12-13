@@ -18,11 +18,6 @@ struct Visits {
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    // let api_key = "API_KEY";
-    // env::set_var(api_key, "8d81bf3811024d7791af944a84de3a56");
-    // let key = env::var("API_KEY").expect("$USER is not set");
-    // println!("API KEY = {}", key);
-    // let api_key = "8d81bf3811024d7791af944a84de3a56";
     let api_key = std::env::var("API_KEY").expect("API_KEY must be set");
 
     let domain = "bbc.com";
