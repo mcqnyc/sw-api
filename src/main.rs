@@ -20,19 +20,21 @@ async fn main() {
     dotenv().ok();
     let api_key = std::env::var("API_KEY").expect("API_KEY must be set");
 
-    let domain = "bbc.com";
-    let start_date = "2022-07";
-    let end_date = "2022-11";
-    let request_url = format!("http://api.similarweb.com/v1/website/{}/total-traffic-and-engagement/visits?api_key={}&start_date={}&end_date={}&country=gb&granularity=monthly&main_domain_only=false&format=json", domain, api_key, start_date, end_date);
+    let args: Vec<String> = env::args().collect();
+
+    let domain = &args[1];
+    let start_date = &args[2];
+    let end_date = &args[3];
+    let country = &args[4];
+
+    let request_url = format!("http://api.similarweb.com/v1/website/{}/total-traffic-and-engagement/visits?api_key={}&start_date={}&end_date={}&country={}&granularity=monthly&main_domain_only=false&format=json", domain, api_key, start_date, end_date, country);
     let response = reqwest::get(&request_url).await.unwrap();
 
     match response.status() {
         reqwest::StatusCode::OK => {
-            // on success, parse our JSON to an APIResponse
             match response.json::<ApiResponse>().await {
-                Ok(parsed) => write_data_to_csv(parsed, domain),
+                Ok(parsed) => write_data_to_csv(parsed, domain, country),
                 Err(e) => println!("{}", e),
-                // Err(_) => println!("Hm, the response didn't match the shape we expected."),
             };
         }
         reqwest::StatusCode::UNAUTHORIZED => {
@@ -44,17 +46,17 @@ async fn main() {
     };
 }
 
-fn write_data_to_csv(json_data: ApiResponse, domain: &str) {
+fn write_data_to_csv(json_data: ApiResponse, domain: &str, country: &str) {
     // Open a file for writing the CSV data
     let mut wtr = csv::Writer::from_path("output.csv").unwrap();
-    wtr.write_record(&["Domain", "Date", "Visits"]).unwrap();
+    wtr.write_record(&["Domain", "Country", "Date", "Visits"]).unwrap();
 
     // Iterate over the JSON data and write it to the CSV file
-    for item in json_data.visits {
-        let date = &item.date;
-        let visits = &item.visits.to_string();
+    for visits in json_data.visits {
+        let date = &visits.date;
+        let visits = &visits.visits.to_string();
 
-        wtr.serialize(&[domain, date, visits]).unwrap();
+        wtr.serialize(&[domain, country, date, visits]).unwrap();
     }
 
     wtr.flush().unwrap();
