@@ -1,7 +1,7 @@
 use dotenv::dotenv;
 use std::{env, process};
 
-use sw_api::{ApiParams, run};
+use sw_api::{run, ApiParams};
 
 // tokio lets us use "async" on our main function
 #[tokio::main]

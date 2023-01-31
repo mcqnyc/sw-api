@@ -1,6 +1,6 @@
-use std::error::Error;
 use reqwest;
 use serde::{Deserialize, Serialize};
+use std::error::Error;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ApiResponse {
@@ -16,8 +16,8 @@ pub struct ApiParams {
 
 impl ApiParams {
     pub fn build(args: &[String]) -> Result<ApiParams, &'static str> {
-        if args.len() <  4 {
-            return Err("not enough arguments")
+        if args.len() < 4 {
+            return Err("not enough arguments");
         }
 
         let domain = args[1].clone();
@@ -25,7 +25,12 @@ impl ApiParams {
         let end_date = args[3].clone();
         let country = args[4].clone();
 
-        Ok(ApiParams { domain, start_date, end_date, country })
+        Ok(ApiParams {
+            domain,
+            start_date,
+            end_date,
+            country,
+        })
     }
 }
 
@@ -35,7 +40,7 @@ pub struct Visits {
     visits: f32,
 }
 
-pub async fn run(api_params: ApiParams, api_key: &str) -> Result<(), Box<dyn Error>>{
+pub async fn run(api_params: ApiParams, api_key: &str) -> Result<(), Box<dyn Error>> {
     let request_url = format!("http://api.similarweb.com/v1/website/{}/total-traffic-and-engagement/visits?api_key={}&start_date={}&end_date={}&country={}&granularity=monthly&main_domain_only=false&format=json", api_params.domain, api_key, api_params.start_date, api_params.end_date, api_params.country);
     let response = reqwest::get(&request_url).await.unwrap();
 
@@ -59,7 +64,8 @@ pub async fn run(api_params: ApiParams, api_key: &str) -> Result<(), Box<dyn Err
 
 fn write_data_to_csv(json_data: ApiResponse, api_params: ApiParams) {
     let mut wtr = csv::Writer::from_path("output.csv").unwrap();
-    wtr.write_record(&["Domain", "Country", "Date", "Visits"]).unwrap();
+    wtr.write_record(&["Domain", "Country", "Date", "Visits"])
+        .unwrap();
 
     let domain = &api_params.domain;
     let country = &api_params.country;
