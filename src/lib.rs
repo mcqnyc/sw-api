@@ -1,3 +1,6 @@
+// use log::{info, error};
+#[macro_use] extern crate log;
+
 use reqwest;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
@@ -48,14 +51,17 @@ pub async fn run(api_params: ApiParams, api_key: &str) -> Result<(), Box<dyn Err
         reqwest::StatusCode::OK => {
             match response.json::<ApiResponse>().await {
                 Ok(parsed) => write_data_to_csv(parsed, api_params),
-                Err(e) => println!("{}", e),
+                Err(e) => error!("{}", e),
             };
+            info!("CSV created");
         }
         reqwest::StatusCode::UNAUTHORIZED => {
-            println!("Invalid API key, most likely");
+            // println!("Invalid API key, most likely");
+            error!("Invalid API key, most likely");
         }
         other => {
-            panic!("Uh oh! Something unexpected happened: {:?}", other);
+            // panic!("Uh oh! Something unexpected happened: {:?}", other);
+            error!("Uh oh! Something unexpected happened: {:?}", other);
         }
     };
 
@@ -78,5 +84,6 @@ fn write_data_to_csv(json_data: ApiResponse, api_params: ApiParams) {
     }
 
     wtr.flush().unwrap();
-    println!("Job done!")
+    info!("Job done!");
+    println!("Job done!");
 }
